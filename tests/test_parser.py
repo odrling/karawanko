@@ -37,7 +37,14 @@ file_tests: list[tuple[str, KaraData]] = [
          "media": None,
          "artists": ["Arai Yumi"],
          "details": [("AMV", "Kaze Tachinu"),
-                     ("AMV", "Le Vent se lève")]})
+                     ("AMV", "Le Vent se lève")]}),
+        ("Anime/Yamada-kun to 7-nin no Majo (TV) - OP - Kuchizuke Diamond.mkv",
+         {"title": "Kuchizuke Diamond",
+          "tags": ["OP"],
+          "media": {"name": "Yamada-kun to 7-nin no Majo (TV)",
+                    "media_type": "anime"},
+          "artists": [],
+          "details": []})
 ]
 
 

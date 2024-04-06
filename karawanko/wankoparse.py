@@ -38,10 +38,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 musicparse = re.compile(
-    r"(?P<artist>[^-]*)-(?P<tags>[^-]*)-(?P<title>[^(]*)(?P<details>\(.*\))?$"
+    r"(?P<artist>.*?) - (?P<tags>[^-]*)-(?P<title>[^(]*)(?P<details>\(.*\))?$"
 )
 mediaparse = re.compile(
-    r"(?P<media>[^-]*)-(?P<tags>[^-]*)-(?P<title>[^(]*)(?P<details>\(.*\))?$"
+    r"(?P<media>.*?) - (?P<tags>[^-]*)-(?P<title>[^(]*)(?P<details>\(.*\))?$"
 )
 detailsparse = re.compile(
     r"(?P<detailtag>\w+)\s*(?P<content>[^-)]+)|\s*\((?P<comment>[^)]*)\)"
@@ -104,7 +104,7 @@ def parse_file(file: Path) -> KaraData | None:
     parents_name = [p.name for p in file.parents]
     if "Anime" in parents_name:
         parser = mediaparse
-        media_type = "Anime"
+        media_type = "anime"
     elif "Wmusic" in parents_name or "CJKmusic" in parents_name:
         parser = musicparse
     elif "Dessin animé" in parents_name:
