@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import gzip
 import importlib.resources
+import itertools
 import json
 import logging
 import mimetypes
@@ -98,8 +99,12 @@ def parse_details(details: str | None):
     return kara_details
 
 
-def parse_artists(artist: str):
-    return [a.strip() for a in artist.split(',') if a]
+def parse_artists(artist: str) -> list[str]:
+    artists = (a.strip() for a in artist.split(',') if a)
+    return list(itertools.chain.from_iterable(
+        a.split(" feat. ") for a in artists
+    ))
+
 
 
 class MediaData(TypedDict):

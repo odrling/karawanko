@@ -29,7 +29,7 @@ file_tests: list[tuple[str, KaraData]] = [
        {"title": "I’m Your Treasure Box ＊Anata wa Marine Senchou Otakarabako Kara Mitsuketa.",
         "tags": ["PV", "NSFW"],
         "media": None,
-        "artists": ["Camellia", "U.Z. INU feat. Houshou Marine"],
+        "artists": ["Camellia", "U.Z. INU", "Houshou Marine"],
         "details": []}),
        ("base/Mugen/CJKmusic/Arai Yumi - PV - Hikoukigumo (AMV Kaze Tachinu - AMV Le Vent se lève).mp4",
         {"title": "Hikoukigumo",
