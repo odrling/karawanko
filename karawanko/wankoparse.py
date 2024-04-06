@@ -41,15 +41,9 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-musicparse = re.compile(
-    r"(?P<artist>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details>\(.*\))?$"
-)
-mediaparse = re.compile(
-    r"(?P<media>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details>\(.*\))?$"
-)
-detailsparse = re.compile(
-    r"(?P<detailtag>\w+)\s*(?P<content>[^-)]+)|\s*\((?P<comment>[^)]*)\)"
-)
+musicparse = re.compile(r"(?P<artist>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details>\(.*\))?$")
+mediaparse = re.compile(r"(?P<media>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details>\(.*\))?$")
+detailsparse = re.compile(r"(?P<detailtag>\w+)\s*(?P<content>[^-)]+)|\s*\((?P<comment>[^)]*)\)")
 cleanup_titles_expr = re.compile(r"\W")
 
 
@@ -84,27 +78,24 @@ def parse_details(details: str | None):
 
     # skip the first parenthese or the regex won't work
     details = details.strip()
-    assert details[0] == '('
-    assert details[-1] == ')'
+    assert details[0] == "("
+    assert details[-1] == ")"
     details = details[1:]
 
     for m in detailsparse.finditer(details):
         res = m.groupdict()
-        if res.get('comment') is not None:  # noqa: SIM108
-            el = ("comment", res['comment'])
+        if res.get("comment") is not None:  # noqa: SIM108
+            el = ("comment", res["comment"])
         else:
-            el = (res['detailtag'], res['content'].strip())
+            el = (res["detailtag"], res["content"].strip())
         kara_details.append(el)
 
     return kara_details
 
 
 def parse_artists(artist: str) -> list[str]:
-    artists = (a.strip() for a in artist.split(',') if a)
-    return list(itertools.chain.from_iterable(
-        a.split(" feat. ") for a in artists
-    ))
-
+    artists = (a.strip() for a in artist.split(",") if a)
+    return list(itertools.chain.from_iterable(a.split(" feat. ") for a in artists))
 
 
 class MediaData(TypedDict):
@@ -150,7 +141,7 @@ def parse_file(file: Path) -> KaraData | None:
         return None
 
     file_match_dict = file_match.groupdict()
-    tags = parse_tags(file_match_dict['tags'])
+    tags = parse_tags(file_match_dict["tags"])
     details = parse_details(file_match_dict.get("details"))
     artists = parse_artists(file_match_dict.get("artist", ""))
 
@@ -170,7 +161,7 @@ def parse_file(file: Path) -> KaraData | None:
     else:
         media = {"name": file_match_dict["media"].strip(), "media_type": media_type}
 
-    title: str = file_match_dict['title'].strip()
+    title: str = file_match_dict["title"].strip()
 
     return {
         "title": title,
