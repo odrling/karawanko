@@ -44,7 +44,13 @@ file_tests: list[tuple[str, KaraData]] = [
           "media": {"name": "Yamada-kun to 7-nin no Majo (TV)",
                     "media_type": "anime"},
           "artists": [],
-          "details": []})
+          "details": []}),
+         ("Nouveau/Mili - PV - world.execute(me);.mkv",
+          {"title": "world.execute(me);",
+           "artists": ["Mili"],
+           "media": None,
+           "tags": ["PV"],
+           "details": []})
 ]
 
 

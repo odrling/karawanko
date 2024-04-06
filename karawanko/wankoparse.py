@@ -38,10 +38,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 musicparse = re.compile(
-    r"(?P<artist>.*?) - (?P<tags>[^-]*)-(?P<title>[^(]*)(?P<details>\(.*\))?$"
+    r"(?P<artist>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details>\(.*\))?$"
 )
 mediaparse = re.compile(
-    r"(?P<media>.*?) - (?P<tags>[^-]*)-(?P<title>[^(]*)(?P<details>\(.*\))?$"
+    r"(?P<media>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details>\(.*\))?$"
 )
 detailsparse = re.compile(
     r"(?P<detailtag>\w+)\s*(?P<content>[^-)]+)|\s*\((?P<comment>[^)]*)\)"
@@ -136,6 +136,12 @@ def parse_file(file: Path) -> KaraData | None:
     media: MediaData | None
     if media_type is None:  # noqa: SIM108
         media = None
+    elif media_type == "magic":
+        if tags[0] in ("PV", "AMV"):
+            artists.append(file_match_dict["media"])
+            media = None
+        else:
+            media = {"name": file_match_dict["media"].strip(), "media_type": media_type}
     else:
         media = {"name": file_match_dict["media"].strip(), "media_type": media_type}
 
