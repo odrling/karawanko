@@ -30,7 +30,14 @@ file_tests: list[tuple[str, KaraData]] = [
         "tags": ["PV", "NSFW"],
         "media": None,
         "artists": ["Camellia", "U.Z. INU feat. Houshou Marine"],
-        "details": []})
+        "details": []}),
+       ("base/Mugen/CJKmusic/Arai Yumi - PV - Hikoukigumo (AMV Kaze Tachinu - AMV Le Vent se lève).mp4",
+        {"title": "Hikoukigumo",
+         "tags": ["PV"],
+         "media": None,
+         "artists": ["Arai Yumi"],
+         "details": [("AMV", "Kaze Tachinu"),
+                     ("AMV", "Le Vent se lève")]})
 ]
 
 
