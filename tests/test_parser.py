@@ -64,6 +64,12 @@ file_tests: list[tuple[str, KaraData]] = [
            "artists": ["Aqours"],
            "media": None,
            "details": [("VIDEO", "Love Live! Sunshine!! Aqours 5th LoveLive! ～Next SPARKLING!!～ Day 1")]}),
+         ("base/Japan7/Nouveau/Aimer, Lilas Ikuta, milet - PV LIVE - Omokage.mkv",
+          {"title": "Omokage",
+           "tags": ["PV", "LIVE"],
+           "artists": ["Aimer", "Lilas Ikuta", "milet"],
+           "media": None,
+           "details": []}),
 ]
 
 
