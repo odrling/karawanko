@@ -44,9 +44,8 @@ mediaparse = re.compile(
     r"(?P<media>[^-]*)-(?P<tags>[^-]*)-(?P<title>[^(]*)(?P<details>\(.*\))?$"
 )
 detailsparse = re.compile(
-    r"\s*(?P<detailtag>\w)+\s*(?P<content>[^-])*|\s*\((?P<comment>[^)]*)\)"
+    r"(?P<detailtag>\w+)\s*(?P<content>[^-)]+)|\s*\((?P<comment>[^)]*)\)"
 )
-# ) ← guess why it's here
 
 
 def init_mimes():
@@ -66,12 +65,18 @@ def parse_details(details: str | None):
     if details is None:
         return kara_details
 
+    # skip the first parenthese or the regex won't work
+    details = details.strip()
+    assert details[0] == '('
+    assert details[-1] == ')'
+    details = details[1:]
+
     for m in detailsparse.finditer(details):
         res = m.groupdict()
-        if "comment" in res:
+        if res.get('comment') is not None:  # noqa: SIM108
             el = ("comment", res['comment'])
         else:
-            el = (res['detailtag'], res['content'])
+            el = (res['detailtag'], res['content'].strip())
         kara_details.append(el)
 
     return kara_details
@@ -129,12 +134,12 @@ def parse_file(file: Path) -> KaraData | None:
     artists = parse_artists(file_match_dict.get("artist", ""))
 
     media: MediaData | None
-    if media_type is None:
+    if media_type is None:  # noqa: SIM108
         media = None
     else:
-        media = {"name": file_match_dict["media"], "media_type": media_type}
+        media = {"name": file_match_dict["media"].strip(), "media_type": media_type}
 
-    title: str = file_match_dict['title']
+    title: str = file_match_dict['title'].strip()
 
     return {
         "title": title,

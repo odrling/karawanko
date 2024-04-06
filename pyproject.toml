@@ -22,6 +22,9 @@ wankoparse = "karawanko.wankoparse:main"
 [tool.hatch.version]
 path = "karawanko/__init__.py"
 
+[tool.ruff]
+line-length = 120
+
 [tool.ruff.lint]
 select = ["E", "F", "W", "B", "SIM", "I"]
 
