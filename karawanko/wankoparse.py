@@ -13,11 +13,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import gzip
+import importlib.resources
 import json
 import logging
 import mimetypes
 import re
 import sys
+from functools import cache
 from pathlib import Path
 from typing import Annotated, TypedDict
 
@@ -46,6 +49,7 @@ mediaparse = re.compile(
 detailsparse = re.compile(
     r"(?P<detailtag>\w+)\s*(?P<content>[^-)]+)|\s*\((?P<comment>[^)]*)\)"
 )
+cleanup_titles_expr = re.compile(r"\W")
 
 
 def init_mimes():
@@ -54,6 +58,18 @@ def init_mimes():
     # cursed video files
     mimetypes.add_type("video/vob", ".vob")
     mimetypes.add_type("video/ts", ".ts")
+
+
+def cleanup_titles(val: str):
+    return cleanup_titles_expr.sub("", val.lower())
+
+
+@cache
+def anime_titles() -> str:
+    anime_titles_file = importlib.resources.files("karawanko").joinpath("anime-titles.dat.gz")
+    with importlib.resources.as_file(anime_titles_file) as f:
+        file_content = gzip.decompress(f.read_bytes()).decode()
+        return cleanup_titles(file_content)
 
 
 def parse_tags(tags: str):
@@ -137,11 +153,15 @@ def parse_file(file: Path) -> KaraData | None:
     if media_type is None:  # noqa: SIM108
         media = None
     elif media_type == "magic":
+        value = file_match_dict["media"].strip()
         if tags[0] in ("PV", "AMV"):
-            artists.append(file_match_dict["media"])
+            artists.append(value)
             media = None
+        elif cleanup_titles(value) in anime_titles():
+            media = {"name": value, "media_type": "anime"}
         else:
-            media = {"name": file_match_dict["media"].strip(), "media_type": media_type}
+            # assume game
+            media = {"name": value, "media_type": "game"}
     else:
         media = {"name": file_match_dict["media"].strip(), "media_type": media_type}
 

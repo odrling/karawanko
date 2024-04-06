@@ -14,7 +14,7 @@ file_tests: list[tuple[str, KaraData]] = [
      {"title": "Beyond the sky",
       "tags": ["ED", "SPOIL"],
       "media": {"name": "Xenoblade Chronicles",
-                "media_type": "magic"},
+                "media_type": "game"},
       "artists": [],
       "details": [("VERS", "Japanese"),
                   ("VIDEO", "Ending")]
@@ -50,7 +50,14 @@ file_tests: list[tuple[str, KaraData]] = [
            "artists": ["Mili"],
            "media": None,
            "tags": ["PV"],
-           "details": []})
+           "details": []}),
+         ("Nouveau/BIRDIE WING Golf Girls' Story - OP - Venus Line.mp4",
+          {"title": "Venus Line",
+           "artists": [],
+           "media": {"name": "BIRDIE WING Golf Girls' Story",
+                     "media_type": "anime"},
+           "tags": ["OP"],
+           "details": []}),
 ]
 
 
