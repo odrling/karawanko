@@ -58,6 +58,12 @@ file_tests: list[tuple[str, KaraData]] = [
                      "media_type": "anime"},
            "tags": ["OP"],
            "details": []}),
+         ("base/Japan7/Nouveau/Aqours - LIVE - Kimi no Hitomi o Meguru Bouken (VIDEO Love Live! Sunshine!! Aqours 5th LoveLive! ～Next SPARKLING!!～ Day 1).mp4",  # noqa: E501
+          {"title": "Kimi no Hitomi o Meguru Bouken",
+           "tags": ["LIVE"],
+           "artists": ["Aqours"],
+           "media": None,
+           "details": [("VIDEO", "Love Live! Sunshine!! Aqours 5th LoveLive! ～Next SPARKLING!!～ Day 1")]}),
 ]
 
 

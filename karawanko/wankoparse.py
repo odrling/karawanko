@@ -154,7 +154,7 @@ def parse_file(file: Path) -> KaraData | None:
         media = None
     elif media_type == "magic":
         value = file_match_dict["media"].strip()
-        if tags[0] in ("PV", "AMV"):
+        if tags[0] in ("PV", "LIVE", "AMV"):
             artists.append(value)
             media = None
         elif cleanup_titles(value) in anime_titles():
