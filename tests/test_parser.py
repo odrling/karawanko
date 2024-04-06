@@ -19,6 +19,18 @@ file_tests: list[tuple[str, KaraData]] = [
       "details": [("VERS", "Japanese"),
                   ("VIDEO", "Ending")]
       }),
+     ("CJKmusic/GUMI, IA, Luka Megurine - PV - Ifuudoudou.mp4",
+      {"title": "Ifuudoudou",
+       "tags": ["PV"],
+       "media": None,
+       "artists": ["GUMI", "IA", "Luka Megurine"],
+       "details": []}),
+      ("CJKmusic/Camellia, U.Z. INU feat. Houshou Marine - PV NSFW - I’m Your Treasure Box ＊Anata wa Marine Senchou Otakarabako Kara Mitsuketa..mp4",  # noqa: E501
+       {"title": "I’m Your Treasure Box ＊Anata wa Marine Senchou Otakarabako Kara Mitsuketa.",
+        "tags": ["PV", "NSFW"],
+        "media": None,
+        "artists": ["Camellia", "U.Z. INU feat. Houshou Marine"],
+        "details": []})
 ]
 
 
