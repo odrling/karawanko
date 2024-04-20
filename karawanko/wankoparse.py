@@ -47,6 +47,8 @@ detailsparse = re.compile(r"(?P<detailtag>\w+)\s*(?P<content>[^-)]+)|\s*\((?P<co
 cleanup_titles_expr = re.compile(r"\W")
 
 
+# only run once
+@cache
 def init_mimes():
     mimetypes.add_type("sub/ass", ".ass")
     mimetypes.add_type("sub/ssa", ".ssa")
@@ -173,6 +175,7 @@ def parse_file(file: Path) -> KaraData | None:
 
 
 def parse_dir(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=True)]):
+    init_mimes()
     file_data: dict[str, KaraData] = {}
     files = dir.rglob("**/*")
     for f in files:
@@ -205,5 +208,4 @@ def parse_dir(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=True
 
 
 def main():
-    init_mimes()
     typer.run(parse_dir)
