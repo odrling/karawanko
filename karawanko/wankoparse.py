@@ -174,7 +174,7 @@ def parse_file(file: Path) -> KaraData | None:
     }
 
 
-def parse_dir(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=True)]):
+def parse_dir(dir: Path) -> dict[str, KaraData]:
     init_mimes()
     file_data: dict[str, KaraData] = {}
     files = dir.rglob("**/*")
@@ -204,8 +204,12 @@ def parse_dir(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=True
 
         file_data[str(f)] = kara_data
 
-    print(json.dumps(file_data))
+    return file_data
+
+
+def main_parse_dir(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=True)]):
+    print(json.dumps(parse_dir(dir)))
 
 
 def main():
-    typer.run(parse_dir)
+    typer.run(main_parse_dir)

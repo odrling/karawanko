@@ -9,6 +9,7 @@ license = "GPL-3.0-or-later"
 dependencies = [
     "typer",
     "rich",
+    "requests",
 ]
 
 [project.urls]
@@ -18,6 +19,7 @@ Issues = "https://github.com/odrling/karawanko/issues"
 
 [project.scripts]
 wankoparse = "karawanko.wankoparse:main"
+wankomigrate = "karawanko.wankomigrate:main"
 
 [tool.hatch.version]
 path = "karawanko/__init__.py"
