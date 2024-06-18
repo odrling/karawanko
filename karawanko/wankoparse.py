@@ -23,7 +23,7 @@ import re
 import sys
 from functools import cache
 from pathlib import Path
-from typing import Annotated, TypedDict
+from typing import Annotated, Iterable, TypedDict
 
 import typer
 from rich.console import Console
@@ -70,7 +70,7 @@ def anime_titles() -> str:
 
 
 def parse_tags(tags: str):
-    return tags.strip().split(" ")
+    return tags.strip().upper().split(" ")
 
 
 def parse_details(details: str | None):
@@ -113,6 +113,36 @@ class KaraData(TypedDict):
     details: list[tuple[str, str]]
 
 
+allowed_tags = {
+    "AMV",
+    "INS",
+    "IS",
+    "PV",
+    "LIVE",
+    "NSFW",
+    "COVER",
+    "REMIX",
+    "SPOIL",
+    "INST",
+    "LONG",
+    "COURT",
+    "SHORT",
+}
+
+
+def validate_tags(tags: Iterable[str]):
+    for tag in tags:
+        if tag.startswith("OP"):
+            continue
+        if tag.startswith("ED"):
+            continue
+        if tag not in allowed_tags:
+            logger.warning(f"Unknown tag {tag}")
+            return False
+
+    return True
+
+
 def parse_file(file: Path) -> KaraData | None:
     media_type = None
     parents_name = [p.name for p in file.parents]
@@ -134,7 +164,7 @@ def parse_file(file: Path) -> KaraData | None:
         parser = mediaparse
         media_type = "magic"
     else:
-        logger.warn(f"we don't know how to parse {file!r}")
+        logger.warning(f"we don't know how to parse {file!r}")
         return None
 
     file_match = parser.match(file.stem)
@@ -144,6 +174,8 @@ def parse_file(file: Path) -> KaraData | None:
 
     file_match_dict = file_match.groupdict()
     tags = parse_tags(file_match_dict["tags"])
+    if not validate_tags(tags):
+        return None
     details = parse_details(file_match_dict.get("details"))
     artists = parse_artists(file_match_dict.get("artist", ""))
 
@@ -184,7 +216,7 @@ def parse_dir(dir: Path) -> dict[str, KaraData]:
 
         mtype, _ = mimetypes.guess_type(f)
         if mtype is None:
-            logger.warn(f"unrecognized mime type {f}")
+            logger.warning(f"unrecognized mime type {f}")
             continue
 
         mcategory, _ = mtype.split("/")
@@ -194,12 +226,12 @@ def parse_dir(dir: Path) -> dict[str, KaraData]:
             continue
 
         if mcategory != "video":
-            logger.warn(f"unhandled file {f} {mtype=}")
+            logger.warning(f"unhandled file {f} {mtype=}")
             continue
 
         kara_data = parse_file(f)
         if kara_data is None:
-            logger.warn(f"ignoring {f}")
+            logger.warning(f"ignoring {f}")
             continue
 
         file_data[str(f)] = kara_data

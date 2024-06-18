@@ -1,9 +1,10 @@
 import unittest
 from pathlib import Path
+from typing import Optional
 
 from karawanko.wankoparse import KaraData, parse_file
 
-file_tests: list[tuple[str, KaraData]] = [
+file_tests: list[tuple[str, Optional[KaraData]]] = [
     (
         "Wmusic/Electric Light Orchestra - AMV - Twilight (AMV Daicon Opening Animations).mp4",
         {
@@ -98,6 +99,10 @@ file_tests: list[tuple[str, KaraData]] = [
             "details": [],
         },
     ),
+    (
+        "Cardcaptor Sakura ~ Clear Card-hen Prologue - Sakura to Futatsu no Kuma - ED - Yakusoku no Sora.mkv",
+        None
+    )
 ]
 
 
