@@ -1,6 +1,5 @@
 import json
 import logging
-from dataclasses import field
 from pathlib import Path
 from typing import Annotated, Literal, TypedDict
 
@@ -69,14 +68,14 @@ class Media(pydantic.BaseModel):
 
 class KaraData(pydantic.BaseModel):
     title: str
-    title_aliases: set[str] = field(default_factory=set)
-    authors: list[str] = field(default_factory=list)
-    artists: list[str] = field(default_factory=list)
+    title_aliases: list[str] = pydantic.Field(default_factory=list)
+    authors: list[str] = pydantic.Field(default_factory=list)
+    artists: list[str] = pydantic.Field(default_factory=list)
     source_media: Media | None = None
     song_order: int = 0
-    medias: list[int] = field(default_factory=list)
-    audio_tags: list[str] = field(default_factory=list)
-    video_tags: list[str] = field(default_factory=list)
+    medias: list[int] = pydantic.Field(default_factory=list)
+    audio_tags: list[str] = pydantic.Field(default_factory=list)
+    video_tags: list[str] = pydantic.Field(default_factory=list)
     comment: str = ""
     version: str = ""
 
