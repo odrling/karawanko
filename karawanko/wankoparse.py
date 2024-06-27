@@ -206,9 +206,10 @@ def parse_file(file: Path) -> KaraData | None:
     }
 
 
-def parse_dir(dir: Path) -> dict[str, KaraData]:
+def parse_dir(dir: Path) -> tuple[dict[str, KaraData], list[str]]:
     init_mimes()
     file_data: dict[str, KaraData] = {}
+    pandora_box: list[str] = []
     files = dir.rglob("**/*")
     for f in files:
         if f.is_dir():
@@ -231,12 +232,12 @@ def parse_dir(dir: Path) -> dict[str, KaraData]:
 
         kara_data = parse_file(f)
         if kara_data is None:
-            logger.warning(f"ignoring {f}")
+            pandora_box.append(str(f))
             continue
 
         file_data[str(f)] = kara_data
 
-    return file_data
+    return file_data, pandora_box
 
 
 def main_parse_dir(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=True)]):

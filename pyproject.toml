@@ -10,6 +10,8 @@ dependencies = [
     "typer",
     "rich",
     "requests",
+    "pydantic",
+    "pyyaml",
 ]
 
 [project.urls]
@@ -19,7 +21,8 @@ Issues = "https://github.com/odrling/karawanko/issues"
 
 [project.scripts]
 wankoparse = "karawanko.wankoparse:main"
-wankomigrate = "karawanko.wankomigrate:main"
+wankoexport = "karawanko.wankoexport:main"
+wankoschema = "karawanko.wankoexport:json_schema"
 
 [tool.hatch.version]
 path = "karawanko/__init__.py"
