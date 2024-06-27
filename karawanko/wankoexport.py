@@ -145,7 +145,8 @@ def wankoexport(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=Tr
 
         kara_export[kara_file] = kara_data
 
-    print("// yaml_language_server: https://raw.githubusercontent.com/odrling/karawanko/master/wankoexport.schema.json")
+    schema_url = "https://raw.githubusercontent.com/odrling/karawanko/master/wankoexport.schema.json"
+    print(f"# yaml-language-server: $schema={schema_url}\n")
 
     export_data = WankoExport(exported=kara_export).model_dump()
     print(yaml.safe_dump(export_data))
