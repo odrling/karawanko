@@ -20,24 +20,11 @@ import json
 import logging
 import mimetypes
 import re
-import sys
 from functools import cache
 from pathlib import Path
 from typing import Annotated, Iterable, TypedDict
 
 import typer
-from rich.console import Console
-from rich.logging import RichHandler
-
-console = Console(file=sys.stderr)
-
-FORMAT = "%(message)s"
-logging.basicConfig(
-    level=logging.INFO,
-    format=FORMAT,
-    datefmt="[%X]",
-    handlers=[RichHandler(console=console)],
-)
 
 logger = logging.getLogger(__name__)
 
