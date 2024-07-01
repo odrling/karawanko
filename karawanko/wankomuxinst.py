@@ -46,7 +46,8 @@ class MKVTKIdentify(TypedDict):
     tracks: list[MKVTKTracks]
 
 
-def muxinst(orig: File, inst: File):
+def muxinst(orig: File, inst: File,
+            inst_track: Annotated[int, typer.Option(help="inst track number")] = -1):
     orig_ass = find_ass(orig)
     inst_ass = find_ass(inst)
 
@@ -68,10 +69,15 @@ def muxinst(orig: File, inst: File):
     proc = run("mkvmerge", "-J", str(inst))
     inst_identify: MKVTKIdentify = json.loads(proc.stdout.decode())
     audio_tracks = [t for t in inst_identify["tracks"] if t["type"] == "audio"]
-    if len(audio_tracks) > 1:
-        raise RuntimeError(f"found two audio tracks in {inst}")
 
-    track_id = audio_tracks[0]["id"]
+    if inst_track == -1:
+        # pick first (and only) track
+        inst_track = 0
+
+        if len(audio_tracks) > 1:
+            raise RuntimeError(f"found too many audio tracks in {inst}")
+
+    track_id = audio_tracks[inst_track]["id"]
     outfile = orig.with_suffix(".mka")
     run("mkvmerge", "-D", "-S", "--sync", f"{track_id}:{inst_shift_ms}", "-a", str(track_id), inst, "-o", outfile)
     logger.info(f"created {outfile}")
