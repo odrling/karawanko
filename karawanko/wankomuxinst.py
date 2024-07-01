@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 File = Annotated[Path, typer.Argument(file_okay=True, dir_okay=False)]
 
 
-def run(*args: str | Path):
-    return subprocess.run(args, check=True, capture_output=True)
+def run(*args: str | Path, capture_output: bool = False):
+    return subprocess.run(args, check=True, capture_output=capture_output)
 
 
 def find_ass(path: Path) -> Path:
@@ -46,6 +46,11 @@ class MKVTKIdentify(TypedDict):
     tracks: list[MKVTKTracks]
 
 
+def media_identify(path: Path) -> MKVTKIdentify:
+    proc = run("mkvmerge", "-J", path, capture_output=True)
+    return json.loads(proc.stdout.decode())
+
+
 def muxinst(orig: File, inst: File,
             inst_track: Annotated[int, typer.Option(help="inst track number")] = -1):
     orig_ass = find_ass(orig)
@@ -66,8 +71,7 @@ def muxinst(orig: File, inst: File,
 
     logging.info(f"{orig}: instrumental track shift: {inst_shift_ms}")
 
-    proc = run("mkvmerge", "-J", str(inst))
-    inst_identify: MKVTKIdentify = json.loads(proc.stdout.decode())
+    inst_identify = media_identify(inst)
     audio_tracks = [t for t in inst_identify["tracks"] if t["type"] == "audio"]
 
     if inst_track == -1:
@@ -87,6 +91,37 @@ def muxinst(orig: File, inst: File,
     inst_ass.unlink()
     logger.warn(f"deleted {inst_ass}")
 
+def mux_single_file(orig: File):
+    ass_file = find_ass(orig)
+
+    inst_identify = media_identify(orig)
+    audio_tracks = [t for t in inst_identify["tracks"] if t["type"] == "audio"]
+    if len(audio_tracks) != 2:
+        raise RuntimeError(f"{orig}: wanted 2 audio tracks, found {len(audio_tracks)}")
+
+    name_out = orig.with_name(orig.name.replace("INST ", ""))
+    media_out = name_out.with_suffix(".mkv")
+    inst_out = name_out.with_suffix(".mka")
+    ass_out = name_out.with_suffix(".ass")
+
+    audio_track_id = audio_tracks[0]["id"]
+    inst_track_id = audio_tracks[1]["id"]
+    run("mkvmerge", "-S", "-a", str(audio_track_id), orig, "-o", media_out)
+    logger.info(f"created {media_out}")
+    run("mkvmerge", "-D", "-S", "-a", str(inst_track_id), orig, "-o", inst_out)
+    logger.info(f"created {inst_out}")
+
+    ass_file.rename(ass_out)
+    logger.info(f"moved {ass_file} to {ass_out}")
+
+    orig.unlink()
+    logger.info(f"deleted {orig}")
+
+
 
 def main():
     typer.run(muxinst)
+
+
+def main_single():
+    typer.run(mux_single_file)
