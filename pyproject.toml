@@ -7,11 +7,12 @@ name = "karawanko"
 dynamic = ["version"]
 license = "GPL-3.0-or-later"
 dependencies = [
-    "typer",
-    "rich",
-    "requests",
     "pydantic",
+    "pysubs2",
     "pyyaml",
+    "requests",
+    "rich",
+    "typer",
 ]
 
 [project.urls]
@@ -23,6 +24,7 @@ Issues = "https://github.com/odrling/karawanko/issues"
 wankoparse = "karawanko.wankoparse:main"
 wankoexport = "karawanko.wankoexport:main"
 wankoschema = "karawanko.wankoexport:json_schema"
+wankomuxinst = "karawanko.wankomuxinst:main"
 
 [tool.hatch.version]
 path = "karawanko/__init__.py"
