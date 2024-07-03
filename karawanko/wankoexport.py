@@ -84,6 +84,7 @@ class KaraData(pydantic.BaseModel):
 
 class WankoExport(pydantic.BaseModel):
     exported: dict[str, KaraData]
+    pandora_box: dict[str, KaraData]
 
 
 def tag_map(tags: list[str], kara_data: KaraData):
@@ -197,10 +198,14 @@ def wankoexport(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=Tr
         except Exception as e:
             raise RuntimeError(f"failed to export {kara_file}: {e}") from e
 
+    pandora_box_data: dict[str, KaraData] = {}
+    for k in pandora_box:
+        pandora_box_data[k] = KaraData(title=k)
+
     schema_url = "https://raw.githubusercontent.com/odrling/karawanko/master/wankoexport.schema.json"
     print(f"# yaml-language-server: $schema={schema_url}\n")
 
-    export_data = WankoExport(exported=kara_export).model_dump()
+    export_data = WankoExport(exported=kara_export, pandora_box=pandora_box_data).model_dump()
     print(yaml.safe_dump(export_data))
 
 
