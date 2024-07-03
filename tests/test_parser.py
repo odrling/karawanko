@@ -1,10 +1,9 @@
 import unittest
 from pathlib import Path
-from typing import Optional
 
 from karawanko.wankoparse import KaraData, parse_file
 
-file_tests: list[tuple[str, Optional[KaraData]]] = [
+file_tests: list[tuple[str, KaraData | None]] = [
     (
         "Wmusic/Electric Light Orchestra - AMV - Twilight (AMV Daicon Opening Animations).mp4",
         {
@@ -13,6 +12,8 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "media": None,
             "details": [("AMV", "Daicon Opening Animations")],
             "artists": ["Electric Light Orchestra"],
+            "language": "",
+            "pandora_box": False,
         },
     ),
     (
@@ -23,6 +24,8 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "media": {"name": "Xenoblade Chronicles", "media_type": "game"},
             "artists": [],
             "details": [("VERS", "Japanese"), ("VIDEO", "Ending")],
+            "language": "",
+            "pandora_box": False,
         },
     ),
     (
@@ -33,6 +36,8 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "media": None,
             "artists": ["GUMI", "IA", "Luka Megurine"],
             "details": [],
+            "language": "",
+            "pandora_box": False,
         },
     ),
     (
@@ -43,6 +48,8 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "media": None,
             "artists": ["Camellia", "U.Z. INU", "Houshou Marine"],
             "details": [],
+            "language": "",
+            "pandora_box": False,
         },
     ),
     (
@@ -53,6 +60,8 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "media": None,
             "artists": ["Arai Yumi"],
             "details": [("AMV", "Kaze Tachinu"), ("AMV", "Le Vent se lève")],
+            "language": "",
+            "pandora_box": False,
         },
     ),
     (
@@ -63,11 +72,21 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "media": {"name": "Yamada-kun to 7-nin no Majo (TV)", "media_type": "anime"},
             "artists": [],
             "details": [],
+            "language": "",
+            "pandora_box": False,
         },
     ),
     (
         "Nouveau/Mili - PV - world.execute(me);.mkv",
-        {"title": "world.execute(me);", "artists": ["Mili"], "media": None, "tags": ["PV"], "details": []},
+        {
+            "title": "world.execute(me);",
+            "artists": ["Mili"],
+            "media": None,
+            "tags": ["PV"],
+            "details": [],
+            "language": "",
+            "pandora_box": False,
+        },
     ),
     (
         "Nouveau/BIRDIE WING Golf Girls' Story - OP - Venus Line.mp4",
@@ -77,6 +96,8 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "media": {"name": "BIRDIE WING Golf Girls' Story", "media_type": "anime"},
             "tags": ["OP"],
             "details": [],
+            "language": "",
+            "pandora_box": False,
         },
     ),
     (
@@ -87,6 +108,8 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "artists": ["Aqours"],
             "media": None,
             "details": [("VIDEO", "Love Live! Sunshine!! Aqours 5th LoveLive! ～Next SPARKLING!!～ Day 1")],
+            "language": "",
+            "pandora_box": False,
         },
     ),
     (
@@ -97,12 +120,11 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "artists": ["Aimer", "Lilas Ikuta", "milet"],
             "media": None,
             "details": [],
+            "language": "",
+            "pandora_box": False,
         },
     ),
-    (
-        "Cardcaptor Sakura ~ Clear Card-hen Prologue - Sakura to Futatsu no Kuma - ED - Yakusoku no Sora.mkv",
-        None
-    ),
+    ("Cardcaptor Sakura ~ Clear Card-hen Prologue - Sakura to Futatsu no Kuma - ED - Yakusoku no Sora.mkv", None),
     (
         "base/Japan7/CJKmusic/(G)I-DLE - PV - HANN(Alone).mp4",
         {
@@ -111,7 +133,9 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "artists": ["(G)I-DLE"],
             "media": None,
             "details": [],
-        }
+            "language": "",
+            "pandora_box": False,
+        },
     ),
     (
         "CJKmusic/Yousei Teikoku - AMV - Tamakui (INS Ga-Rei Zero - AMV Project Zero).mkv",
@@ -121,8 +145,34 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
             "artists": ["Yousei Teikoku"],
             "media": None,
             "details": [("INS", "Ga-Rei Zero"), ("AMV", "Project Zero")],
-        }
-    )
+            "language": "",
+            "pandora_box": False,
+        },
+    ),
+    (
+        "base/Japan7/Dessin animé/Chevaliers du Zodiaque (les) - OP2 - FR - L'Aventure est sur ton chemin.avi",
+        {
+            "title": "L'Aventure est sur ton chemin",
+            "tags": ["OP2"],
+            "artists": [],
+            "media": {"name": "Chevaliers du Zodiaque (les)", "media_type": "cartoon"},
+            "details": [],
+            "language": "FR",
+            "pandora_box": True,
+        },
+    ),
+    (
+        "base/Japan7/Dessin animé/Galaxy Express 999 - OP - FR.avi",
+        {
+            "title": "Galaxy Express 999",
+            "tags": ["OP"],
+            "artists": [],
+            "media": {"name": "Galaxy Express 999", "media_type": "cartoon"},
+            "details": [],
+            "language": "FR",
+            "pandora_box": True,
+        },
+    ),
 ]
 
 
