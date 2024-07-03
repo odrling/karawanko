@@ -52,9 +52,12 @@ def cleanup_titles(val: str):
 @cache
 def anime_titles() -> str:
     anime_titles_file = importlib.resources.files("karawanko").joinpath("anime-titles.dat.gz")
+    special_cases = [
+        "Boku no Hero Academia 4th Season",
+    ]
     with importlib.resources.as_file(anime_titles_file) as f:
         file_content = gzip.decompress(f.read_bytes()).decode()
-        return cleanup_titles(file_content)
+        return cleanup_titles(f"{file_content}\n{"\n".join(special_cases)}")
 
 
 def is_anime(val: str):

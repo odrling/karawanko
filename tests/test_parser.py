@@ -173,6 +173,18 @@ file_tests: list[tuple[str, KaraData | None]] = [
             "pandora_box": True,
         },
     ),
+    (
+        "base/Japan7/Nouveau/Boku no Hero Academia 4th Season - ED2 - Shout Baby.mkv",
+        {
+            "title": "Shout Baby",
+            "tags": ["ED2"],
+            "artists": [],
+            "media": {"name": "Boku no Hero Academia 4th Season", "media_type": "anime"},
+            "details": [],
+            "language": "",
+            "pandora_box": False,
+        }
+    )
 ]
 
 
