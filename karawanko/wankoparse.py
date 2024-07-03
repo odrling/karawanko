@@ -149,6 +149,8 @@ def parse_file(file: Path) -> KaraData | None:
     elif "Dessin animé" in parents_name:
         parser = mediaparse
         media_type = "cartoon"
+        logger.warning(f"ignoring cartoon karaoke {file}")
+        return None
     elif "Jeu" in parents_name:
         parser = mediaparse
         media_type = "game"
