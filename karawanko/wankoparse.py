@@ -106,6 +106,7 @@ class KaraData(TypedDict):
     artists: list[str]
     tags: list[str]
     details: list[Details]
+    pandora_box: bool
 
 
 allowed_tags = {
@@ -141,6 +142,7 @@ def validate_tags(tags: Iterable[str]):
 def parse_file(file: Path) -> KaraData | None:
     media_type = None
     parents_name = [p.name for p in file.parents]
+    is_pandora_box = False
     if "Anime" in parents_name:
         parser = mediaparse
         media_type = "anime"
@@ -149,8 +151,7 @@ def parse_file(file: Path) -> KaraData | None:
     elif "Dessin animé" in parents_name:
         parser = mediaparse
         media_type = "cartoon"
-        logger.warning(f"ignoring cartoon karaoke {file}")
-        return None
+        is_pandora_box = True
     elif "Jeu" in parents_name:
         parser = mediaparse
         media_type = "game"
@@ -200,13 +201,13 @@ def parse_file(file: Path) -> KaraData | None:
         "media": media,
         "artists": artists,
         "details": details,
+        "pandora_box": is_pandora_box,
     }
 
 
-def parse_dir(dir: Path) -> tuple[dict[str, KaraData], list[str]]:
+def parse_dir(dir: Path) -> dict[str, KaraData | None]:
     init_mimes()
-    file_data: dict[str, KaraData] = {}
-    pandora_box: list[str] = []
+    file_data: dict[str, KaraData | None] = {}
     files = dir.rglob("**/*")
     for f in files:
         if f.is_dir():
@@ -228,13 +229,9 @@ def parse_dir(dir: Path) -> tuple[dict[str, KaraData], list[str]]:
             continue
 
         kara_data = parse_file(f)
-        if kara_data is None:
-            pandora_box.append(str(f))
-            continue
-
         file_data[str(f)] = kara_data
 
-    return file_data, pandora_box
+    return file_data
 
 
 def main_parse_dir(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=True)]):

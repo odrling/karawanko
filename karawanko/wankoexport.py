@@ -179,11 +179,16 @@ def details_map(details: list[wankoparse.Details], kara: KaraData):
 
 
 def wankoexport(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=True)]):
-    karas, pandora_box = wankoparse.parse_dir(dir)
+    karas = wankoparse.parse_dir(dir)
 
     kara_export: dict[str, KaraData] = {}
+    pandora_box_data: dict[str, KaraData] = {}
 
     for kara_file, kara in karas.items():
+        if kara is None:
+            pandora_box_data[kara_file] = KaraData(title=os.path.basename(kara_file))
+            continue
+
         kara_data = KaraData(title=kara["title"])
 
         for artist in kara["artists"]:
@@ -197,13 +202,12 @@ def wankoexport(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=Tr
             tag_map(kara["tags"], kara_data)
             details_map(kara["details"], kara_data)
 
-            kara_export[kara_file] = kara_data
+            if kara["pandora_box"]:
+                pandora_box_data[kara_file] = kara_data
+            else:
+                kara_export[kara_file] = kara_data
         except Exception as e:
             raise RuntimeError(f"failed to export {kara_file}: {e}") from e
-
-    pandora_box_data: dict[str, KaraData] = {}
-    for k in pandora_box:
-        pandora_box_data[k] = KaraData(title=os.path.basename(k))
 
     schema_url = "https://raw.githubusercontent.com/odrling/karawanko/master/wankoexport.schema.json"
     print(f"# yaml-language-server: $schema={schema_url}\n")
