@@ -44,13 +44,15 @@ audio_tag_map = {
     "IS": "IS",
 }
 
-anime_video_tag_map = {
+video_tag_map = {
     "AMV": "FANMADE",
     "NSFW": "NSFW",
     "SPOIL": "SPOILER",
+    "LIVE": "CONCERT",  # most likely
+    "REMIX": "REMIX",
 }
 
-known_unmapped_tags = "LONG", "FULL", "INST", "COURT", "PV", "REMIX"
+known_unmapped_tags = "LONG", "FULL", "INST", "COURT", "SHORT", "PV"
 known_unhandled_media_types = ("cartoon",)
 
 
@@ -73,7 +75,7 @@ class KaraData(pydantic.BaseModel):
     artists: list[str] = pydantic.Field(default_factory=list)
     source_media: Media | None = None
     song_order: int = 0
-    medias: list[int] = pydantic.Field(default_factory=list)
+    medias: list[Media] = pydantic.Field(default_factory=list)
     audio_tags: list[str] = pydantic.Field(default_factory=list)
     video_tags: list[str] = pydantic.Field(default_factory=list)
     comment: str = ""
@@ -84,12 +86,12 @@ class WankoExport(pydantic.BaseModel):
     exported: dict[str, KaraData]
 
 
-def anime_tag_map(tags: list[str], kara_data: KaraData):
+def tag_map(tags: list[str], kara_data: KaraData):
     if "LONG" in tags:
         kara_data.version = "Long"
     if "FULL" in tags:
         kara_data.version = "Full"
-    if "COURT" in tags:
+    if "COURT" in tags or "SHORT" in tags:
         kara_data.version = "Short"
 
     for tag in tags:
@@ -112,12 +114,64 @@ def anime_tag_map(tags: list[str], kara_data: KaraData):
             unmapped = False
             kara_data.audio_tags.append(audio_tag_map[tag])
 
-        if tag in anime_video_tag_map:
+        if tag in video_tag_map:
             unmapped = False
-            kara_data.video_tags.append(anime_video_tag_map[tag])
+            kara_data.video_tags.append(video_tag_map[tag])
 
         if unmapped and tag not in known_unmapped_tags:
             raise RuntimeError(f"unmapped tag {tag}")
+
+
+def details_map(details: list[wankoparse.Details], kara: KaraData):
+    for detail in details:
+        kind, value = detail
+        if kind == "comment":
+            kara.comment += value
+            continue
+
+        if kind in ("OARTIST", "ARTIST"):
+            kara.artists.append(value)
+            continue
+
+        if kind == "AMV":
+            assert "FANMADE" in kara.video_tags, f"{details=}: FANMADE not in {kara.video_tags=}"
+            mtype = "ANIME" if wankoparse.is_anime(value) else "GAME"
+            kara.medias.append(Media(name=value, mtype=mtype))
+            continue
+
+        if kind == "VERS":
+            kara.version += f"{value} "
+            continue
+
+        if kind == "EP":
+            kara.version += f"Episode {value} "
+            continue
+
+        if kind == "VIDEO":
+            kara.comment += f"source video: {value}\n"
+            continue
+
+        if kind.startswith("OP") or kind.startswith("ED"):
+            if len(kind) > 2:
+                kara.song_order = int(kind[2:])
+            kara.audio_tags.append(kind[:2])
+            mtype = "ANIME" if wankoparse.is_anime(value) else "GAME"
+            kara.source_media = Media(name=value, mtype=mtype)
+            continue
+
+        if kind == "INS":
+            kara.audio_tags.append("INS")
+            mtype = "ANIME" if wankoparse.is_anime(value) else "GAME"
+            kara.source_media = Media(name=value, mtype=mtype)
+            continue
+
+        if kind == "VTITLE":
+            kara.title_aliases.append(value)
+            continue
+
+        raise RuntimeError(f"failed to map detail: {detail}")
+
+    kara.comment.strip()
 
 
 def wankoexport(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=True)]):
@@ -135,14 +189,13 @@ def wankoexport(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=Tr
         if media is not None:
             kara_data.source_media = Media.from_media_data(media)
 
-            if media["media_type"] in ("anime", "game", "live_action", "cartoon"):
-                anime_tag_map(kara["tags"], kara_data)
-            elif media["media_type"] in known_unhandled_media_types:
-                pass
-            else:
-                raise RuntimeError(f"Unhandled media type {media["media_type"]}")
+        try:
+            tag_map(kara["tags"], kara_data)
+            details_map(kara["details"], kara_data)
 
-        kara_export[kara_file] = kara_data
+            kara_export[kara_file] = kara_data
+        except Exception as e:
+            raise RuntimeError(f"failed to export {kara_file}: {e}") from e
 
     schema_url = "https://raw.githubusercontent.com/odrling/karawanko/master/wankoexport.schema.json"
     print(f"# yaml-language-server: $schema={schema_url}\n")

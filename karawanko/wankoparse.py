@@ -22,15 +22,15 @@ import mimetypes
 import re
 from functools import cache
 from pathlib import Path
-from typing import Annotated, Iterable, TypedDict
+from typing import Annotated, Iterable, NamedTuple, TypedDict
 
 import typer
 
 logger = logging.getLogger(__name__)
 
-musicparse = re.compile(r"(?P<artist>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details>\(.*\))?$")
-mediaparse = re.compile(r"(?P<media>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details>\(.*\))?$")
-detailsparse = re.compile(r"(?P<detailtag>\w+)\s*(?P<content>[^-)]+)|\s*\((?P<comment>[^)]*)\)")
+musicparse = re.compile(r"(?P<artist>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details> \(.*\))?$")
+mediaparse = re.compile(r"(?P<media>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details> \(.*\))?$")
+detailsparse = re.compile(r"(?P<detailtag>\w+)\s*(?P<content>.*?)(?: -|\)$)|\s*\((?P<comment>[^)]*)\)")
 cleanup_titles_expr = re.compile(r"\W")
 
 
@@ -56,12 +56,20 @@ def anime_titles() -> str:
         return cleanup_titles(file_content)
 
 
+def is_anime(val: str):
+    return cleanup_titles(val) in anime_titles()
+
+
 def parse_tags(tags: str):
     return tags.strip().upper().split(" ")
 
 
+class Details(NamedTuple):
+    kind: str
+    value: str
+
 def parse_details(details: str | None):
-    kara_details: list[tuple[str, str]] = []
+    kara_details: list[Details] = []
     if details is None:
         return kara_details
 
@@ -74,9 +82,9 @@ def parse_details(details: str | None):
     for m in detailsparse.finditer(details):
         res = m.groupdict()
         if res.get("comment") is not None:  # noqa: SIM108
-            el = ("comment", res["comment"])
+            el = Details("comment", res["comment"])
         else:
-            el = (res["detailtag"], res["content"].strip())
+            el = Details(res["detailtag"], res["content"].strip())
         kara_details.append(el)
 
     return kara_details
@@ -97,7 +105,7 @@ class KaraData(TypedDict):
     media: MediaData | None
     artists: list[str]
     tags: list[str]
-    details: list[tuple[str, str]]
+    details: list[Details]
 
 
 allowed_tags = {
@@ -174,7 +182,7 @@ def parse_file(file: Path) -> KaraData | None:
         if tags[0] in ("PV", "LIVE", "AMV"):
             artists = parse_artists(value)
             media = None
-        elif cleanup_titles(value) in anime_titles():
+        elif is_anime(value):
             media = {"name": value, "media_type": "anime"}
         else:
             # assume game

@@ -102,6 +102,26 @@ file_tests: list[tuple[str, Optional[KaraData]]] = [
     (
         "Cardcaptor Sakura ~ Clear Card-hen Prologue - Sakura to Futatsu no Kuma - ED - Yakusoku no Sora.mkv",
         None
+    ),
+    (
+        "base/Japan7/CJKmusic/(G)I-DLE - PV - HANN(Alone).mp4",
+        {
+            "title": "HANN(Alone)",
+            "tags": ["PV"],
+            "artists": ["(G)I-DLE"],
+            "media": None,
+            "details": [],
+        }
+    ),
+    (
+        "CJKmusic/Yousei Teikoku - AMV - Tamakui (INS Ga-Rei Zero - AMV Project Zero).mkv",
+        {
+            "title": "Tamakui",
+            "tags": ["AMV"],
+            "artists": ["Yousei Teikoku"],
+            "media": None,
+            "details": [("INS", "Ga-Rei Zero"), ("AMV", "Project Zero")],
+        }
     )
 ]
 
