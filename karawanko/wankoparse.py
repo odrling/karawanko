@@ -54,6 +54,7 @@ def anime_titles() -> str:
     anime_titles_file = importlib.resources.files("karawanko").joinpath("anime-titles.dat.gz")
     special_cases = [
         "Boku no Hero Academia 4th Season",
+        "JaidenAnimations the Anime",
     ]
     with importlib.resources.as_file(anime_titles_file) as f:
         file_content = gzip.decompress(f.read_bytes()).decode()
@@ -166,6 +167,7 @@ def parse_file(file: Path) -> KaraData | None:
     elif "Nouveau" in parents_name:
         parser = mediaparse
         media_type = "magic"
+        is_pandora_box = True
     else:
         logger.warning(f"we don't know how to parse {file!r}")
         return None
