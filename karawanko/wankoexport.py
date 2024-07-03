@@ -2,7 +2,7 @@ import json
 import logging
 import os.path
 from pathlib import Path
-from typing import Annotated, Literal, TypedDict
+from typing import Annotated, Literal
 
 import pydantic
 import typer
@@ -16,19 +16,6 @@ logger = logging.getLogger(__name__)
 artists: dict[str, int] = {}
 medias: dict[str, int] = {}
 
-
-class KaraInfo(TypedDict):
-    title: str
-    title_aliases: list[str]
-    authors: list[str]
-    artists: list[str]
-    source_media: int
-    song_order: int
-    medias: list[int]
-    audio_tags: list[str]
-    video_tags: list[str]
-    comment: str
-    version: str
 
 MTYPES = Literal["ANIME", "GAME", "LIVE", "CARTOON"]
 media_type_map: dict[str, MTYPES] = {
@@ -82,6 +69,7 @@ class KaraData(pydantic.BaseModel):
     video_tags: list[str] = pydantic.Field(default_factory=list)
     comment: str = ""
     version: str = ""
+    language: str = ""
 
 
 class WankoExport(pydantic.BaseModel):
@@ -189,7 +177,7 @@ def wankoexport(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=Tr
             pandora_box_data[kara_file] = KaraData(title=os.path.basename(kara_file))
             continue
 
-        kara_data = KaraData(title=kara["title"])
+        kara_data = KaraData(title=kara["title"], language=kara["language"])
 
         for artist in kara["artists"]:
             kara_data.artists.append(artist)

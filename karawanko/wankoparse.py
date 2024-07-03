@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 musicparse = re.compile(r"(?P<artist>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details> \(.*\))?$")
 mediaparse = re.compile(r"(?P<media>.*?) - (?P<tags>[^-]*)-(?P<title>.*?)(?P<details> \(.*\))?$")
+cartoonparse = re.compile(r"(?P<media>.*?) - (?P<tags>[^-]*)- (?P<language>\w+)(?: - (?P<title>.*?)(?P<details> \(.*\))?)?$")  # noqa: E501
 detailsparse = re.compile(r"(?P<detailtag>\w+)\s*(?P<content>.*?)(?: -|\)$)|\s*\((?P<comment>[^)]*)\)")
 cleanup_titles_expr = re.compile(r"\W")
 
@@ -106,6 +107,7 @@ class KaraData(TypedDict):
     artists: list[str]
     tags: list[str]
     details: list[Details]
+    language: str
     pandora_box: bool
 
 
@@ -149,7 +151,7 @@ def parse_file(file: Path) -> KaraData | None:
     elif "Wmusic" in parents_name or "CJKmusic" in parents_name:
         parser = musicparse
     elif "Dessin animé" in parents_name:
-        parser = mediaparse
+        parser = cartoonparse
         media_type = "cartoon"
         is_pandora_box = True
     elif "Jeu" in parents_name:
@@ -193,7 +195,15 @@ def parse_file(file: Path) -> KaraData | None:
     else:
         media = {"name": file_match_dict["media"].strip(), "media_type": media_type}
 
-    title: str = file_match_dict["title"].strip()
+    if file_match_dict["title"] is None:
+        # set default title for cartoon category to media name
+        assert media is not None
+        assert media["name"] is not None
+        title = media["name"]
+    else:
+        title: str = file_match_dict["title"].strip()
+
+    language: str = file_match_dict.get("language", "")
 
     return {
         "title": title,
@@ -201,6 +211,7 @@ def parse_file(file: Path) -> KaraData | None:
         "media": media,
         "artists": artists,
         "details": details,
+        "language": language,
         "pandora_box": is_pandora_box,
     }
 
