@@ -1,5 +1,6 @@
 import json
 import logging
+import os.path
 from pathlib import Path
 from typing import Annotated, Literal, TypedDict
 
@@ -200,7 +201,7 @@ def wankoexport(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=Tr
 
     pandora_box_data: dict[str, KaraData] = {}
     for k in pandora_box:
-        pandora_box_data[k] = KaraData(title=k)
+        pandora_box_data[k] = KaraData(title=os.path.basename(k))
 
     schema_url = "https://raw.githubusercontent.com/odrling/karawanko/master/wankoexport.schema.json"
     print(f"# yaml-language-server: $schema={schema_url}\n")
