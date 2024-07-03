@@ -1,6 +1,5 @@
 import json
 import logging
-import os.path
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -174,7 +173,7 @@ def wankoexport(dir: Annotated[Path, typer.Argument(file_okay=False, dir_okay=Tr
 
     for kara_file, kara in karas.items():
         if kara is None:
-            pandora_box_data[kara_file] = KaraData(title=os.path.basename(kara_file))
+            pandora_box_data[kara_file] = KaraData(title=Path(kara_file).stem)
             continue
 
         kara_data = KaraData(title=kara["title"], language=kara["language"])
