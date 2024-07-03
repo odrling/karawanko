@@ -46,14 +46,15 @@ audio_tag_map = {
 }
 
 video_tag_map = {
-    "AMV": "FANMADE",
-    "NSFW": "NSFW",
-    "SPOIL": "SPOILER",
-    "LIVE": "CONCERT",  # most likely
-    "REMIX": "REMIX",
+    "AMV": ["FANMADE", "MV"],
+    "PV": ["MV"],
+    "NSFW": ["NSFW"],
+    "SPOIL": ["SPOILER"],
+    "LIVE": ["CONCERT"],  # most likely
+    "REMIX": ["REMIX"],
 }
 
-known_unmapped_tags = "LONG", "FULL", "INST", "COURT", "SHORT", "PV"
+known_unmapped_tags = "LONG", "FULL", "INST", "COURT", "SHORT"
 known_unhandled_media_types = ("cartoon",)
 
 
@@ -118,7 +119,7 @@ def tag_map(tags: list[str], kara_data: KaraData):
 
         if tag in video_tag_map:
             unmapped = False
-            kara_data.video_tags.append(video_tag_map[tag])
+            kara_data.video_tags.extend(video_tag_map[tag])
 
         if unmapped and tag not in known_unmapped_tags:
             raise RuntimeError(f"unmapped tag {tag}")
@@ -137,6 +138,7 @@ def details_map(details: list[wankoparse.Details], kara: KaraData):
 
         if kind == "AMV":
             assert "FANMADE" in kara.video_tags, f"{details=}: FANMADE not in {kara.video_tags=}"
+            assert "MV" in kara.video_tags, f"{details=}: MV not in {kara.video_tags=}"
             mtype = "ANIME" if wankoparse.is_anime(value) else "GAME"
             kara.medias.append(Media(name=value, mtype=mtype))
             continue
