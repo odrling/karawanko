@@ -134,9 +134,15 @@ class KaraberusClient:
         source_media = None if kara.source_media is None else self.create_media(kara.source_media)
         authors = [self.create_author(a) for a in authors_str]
 
+        audio_tags = kara.audio_tags
+
         # filter OP/ED/INS video tags
         video_tags = [tag for tag in kara.video_tags
                       if tag not in ("OP", "ED", "INS")]
+
+        if "REMIX" in video_tags:
+            video_tags.remove("REMIX")
+            audio_tags.append("REMIX")
 
         return {
             "title": kara.title,
