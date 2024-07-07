@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from itertools import chain
@@ -26,7 +27,7 @@ class KaraInfo(TypedDict):
     title_aliases: list[str]
     authors: list[int]
     artists: list[int]
-    source_media: int | None
+    source_media: int
     song_order: int
     medias: list[int]
     audio_tags: list[str]
@@ -34,6 +35,12 @@ class KaraInfo(TypedDict):
     comment: str
     version: str
     language: str
+
+
+class KaraInfoDB(TypedDict):
+    VideoUploaded: bool
+    InstrumentalUploaded: bool
+    SubtitlesUploaded: bool
 
 
 class KaraberusClient:
@@ -131,7 +138,7 @@ class KaraberusClient:
     def to_karaberus_karainfo(self, kara: KaraData, authors_str: list[str]) -> KaraInfo:
         artists = [self.create_artist(a) for a in kara.artists]
         medias = [self.create_media(m) for m in kara.medias]
-        source_media = None if kara.source_media is None else self.create_media(kara.source_media)
+        source_media = 0 if kara.source_media is None else self.create_media(kara.source_media)
         authors = [self.create_author(a) for a in authors_str]
 
         audio_tags = kara.audio_tags
@@ -142,6 +149,10 @@ class KaraberusClient:
 
         if "REMIX" in video_tags:
             video_tags.remove("REMIX")
+            audio_tags.append("REMIX")
+
+        if "COVER" in audio_tags:
+            audio_tags.remove("COVER")
             audio_tags.append("REMIX")
 
         return {
@@ -185,6 +196,13 @@ class KaraberusClient:
             with requests.put(endpoint, files=files, headers=self.headers) as resp:
                 resp.raise_for_status()
 
+    def get_kara(self, kara_id) -> KaraInfoDB:
+        endpoint = self.endpoint(f"/api/kara/{kara_id}")
+
+        with requests.get(endpoint, headers=self.headers) as resp:
+            resp.raise_for_status()
+            return resp.json()["kara"]
+
 
 class KaraFiles(NamedTuple):
     video: Path
@@ -224,13 +242,8 @@ def find_authors(sub_file: Path):
         return list(set(timing_reg.findall(f.read(1024))))
 
 
-def migrate(export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=False)], server: str, token: str):
-    client = KaraberusClient(server, token)
-
-    with export.open() as f:
-        export_data_obj = yaml.safe_load(f)
-        export_data = WankoExport.model_validate(export_data_obj)
-
+def migrate_db(export_data: WankoExport, client: KaraberusClient):
+    kara_ids: dict[str, int] = {}
     all_karas = chain(export_data.exported.items(), export_data.pandora_box.items())
 
     for kara, kara_data in all_karas:
@@ -243,14 +256,48 @@ def migrate(export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=Fals
             creation_time = int(kara_files.sub.stat().st_mtime)
 
         kara_id = client.create_kara(kara_data, authors)
-        client.upload(kara_id, kara_files.video, "video")
-        if kara_files.sub is not None:
-            client.upload(kara_id, kara_files.sub, "sub")
-        if kara_files.audio is not None:
-            client.upload(kara_id, kara_files.audio, "inst")
 
         if creation_time is not None:
             client.set_creation_time(kara_id, creation_time)
+
+        kara_ids[kara] = kara_id
+
+    return kara_ids
+
+
+def migrate_files(client: KaraberusClient, kara_ids: dict[str, int]):
+    for kara, kara_id in kara_ids.items():
+        kara_info = client.get_kara(kara_id)
+        kara_id = kara_ids[kara]
+        kara_files = find_files(kara)
+        if not kara_info["VideoUploaded"]:
+            client.upload(kara_id, kara_files.video, "video")
+        if kara_files.sub is not None and not kara_info["SubtitlesUploaded"]:
+            client.upload(kara_id, kara_files.sub, "sub")
+        if kara_files.audio is not None and not kara_info["InstrumentalUploaded"]:
+            client.upload(kara_id, kara_files.audio, "inst")
+
+
+def migrate(export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=False)], server: str, token: str):
+    client = KaraberusClient(server, token)
+
+    kara_id_dump_file = export.with_suffix(".iddump.json")
+
+    if kara_id_dump_file.exists():
+        with kara_id_dump_file.open() as f:
+            kara_ids: dict[str, int] = json.load(f)
+    else:
+        with export.open() as f:
+            export_data_obj = yaml.safe_load(f)
+            export_data = WankoExport.model_validate(export_data_obj)
+
+        kara_ids = migrate_db(export_data, client)
+        with kara_id_dump_file.open("w") as f:
+            json.dump(kara_ids, f)
+
+    migrate_files(client, kara_ids)
+
+
 
 
 def main():
