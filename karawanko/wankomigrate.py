@@ -67,7 +67,7 @@ class KaraberusClient:
 
     def create_author(self, name: str):
         endpoint = self.endpoint("/api/tags/author")
-        body = {"name": name, "additional_names": []}
+        body = {"name": name}
 
         if name not in self.authors:
             with self.session.post(endpoint, json=body) as resp:
@@ -127,6 +127,10 @@ class KaraberusClient:
         source_media = None if kara.source_media is None else self.create_media(kara.source_media)
         authors = [self.create_author(a) for a in authors_str]
 
+        # filter OP/ED/INS video tags
+        video_tags = [tag for tag in kara.video_tags
+                      if tag not in ("OP", "ED", "INS")]
+
         return {
             "title": kara.title,
             "medias": medias,
@@ -137,7 +141,7 @@ class KaraberusClient:
             "language": kara.language,
             "song_order": kara.song_order,
             "audio_tags": kara.audio_tags,
-            "video_tags": kara.video_tags,
+            "video_tags": video_tags,
             "source_media": source_media,
             "title_aliases": kara.title_aliases,
         }
@@ -149,20 +153,22 @@ class KaraberusClient:
         with self.session.post(endpoint, json=body) as resp:
             resp.raise_for_status()
             data = resp.json()
-            return data["kara"]["id"]
+            return data["kara"]["ID"]
 
     def set_creation_time(self, kara_id: int, creation_time: int):
         endpoint = self.endpoint(f"/api/kara/{kara_id}/creation_time")
         body = {"creation_time": creation_time}
 
-        with self.session.post(endpoint, json=body) as resp:
+        with self.session.patch(endpoint, json=body) as resp:
             resp.raise_for_status()
 
     def upload(self, kara_id, file: Path, file_type: Literal["video", "sub", "inst"]):
         endpoint = self.endpoint(f"/api/kara/{kara_id}/upload/{file_type}")
-        with file.open() as f:
+        logger.info(f"uploading {file}")
+
+        with file.open("rb") as f:
             files = {"file": f}
-            with self.session.post(endpoint, files=files) as resp:
+            with self.session.put(endpoint, files=files) as resp:
                 resp.raise_for_status()
 
 
@@ -214,6 +220,7 @@ def migrate(export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=Fals
     all_karas = chain(export_data.exported.items(), export_data.pandora_box.items())
 
     for kara, kara_data in all_karas:
+        logger.info(f"processing {kara}")
         kara_files = find_files(kara)
         authors: list[str] = []
         creation_time = None
@@ -223,9 +230,9 @@ def migrate(export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=Fals
 
         kara_id = client.create_kara(kara_data, authors)
         client.upload(kara_id, kara_files.video, "video")
-        if kara_files.sub:
+        if kara_files.sub is not None:
             client.upload(kara_id, kara_files.sub, "sub")
-        if kara_files.audio:
+        if kara_files.audio is not None:
             client.upload(kara_id, kara_files.audio, "inst")
 
         if creation_time is not None:
@@ -234,3 +241,7 @@ def migrate(export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=Fals
 
 def main():
     typer.run(migrate)
+
+
+if __name__ == "__main__":
+    main()
