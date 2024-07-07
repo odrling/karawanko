@@ -4,6 +4,7 @@ from itertools import chain
 from pathlib import Path
 from typing import Annotated, Literal, NamedTuple, TypedDict
 
+import backoff
 import requests
 import typer
 import yaml
@@ -11,6 +12,13 @@ import yaml
 from karawanko.wankoexport import KaraData, Media, WankoExport
 
 logger = logging.getLogger(__name__)
+
+
+default_backoff = backoff.on_exception(
+        backoff.expo,
+        (ConnectionError,),
+        max_time=30,
+)
 
 
 class KaraInfo(TypedDict):
@@ -31,8 +39,7 @@ class KaraInfo(TypedDict):
 class KaraberusClient:
     def __init__(self, server: str, token: str):
         self.server = server
-        self.session = requests.Session()
-        self.session.headers["Authorization"] = f"Bearer {token}"
+        self.headers = {"Authorization": f"Bearer {token}"}
         self.artists: dict[str, int] = {}
         self.medias: dict[str, int] = {}
         self.authors: dict[str, int] = {}
@@ -45,7 +52,7 @@ class KaraberusClient:
         body = {"name": name, "additional_names": []}
 
         if name not in self.artists:
-            with self.session.post(endpoint, json=body) as resp:
+            with requests.post(endpoint, json=body, headers=self.headers) as resp:
                 data = resp.json()
                 try:
                     self.artists[name] = data["artist"]["ID"]
@@ -59,7 +66,7 @@ class KaraberusClient:
         endpoint = self.endpoint("/api/tags/artist")
 
         if name not in self.artists:
-            with self.session.get(endpoint, params={"name": name}) as resp:
+            with requests.get(endpoint, params={"name": name}, headers=self.headers) as resp:
                 data = resp.json()
                 self.artists[name] = data["artist"]["ID"]
 
@@ -70,7 +77,7 @@ class KaraberusClient:
         body = {"name": name}
 
         if name not in self.authors:
-            with self.session.post(endpoint, json=body) as resp:
+            with requests.post(endpoint, json=body, headers=self.headers) as resp:
                 data = resp.json()
                 try:
                     self.authors[name] = data["author"]["ID"]
@@ -84,7 +91,7 @@ class KaraberusClient:
         endpoint = self.endpoint("/api/tags/author")
 
         if name not in self.authors:
-            with self.session.get(endpoint, params={"name": name}) as resp:
+            with requests.get(endpoint, params={"name": name}, headers=self.headers) as resp:
                 data = resp.json()
                 self.authors[name] = data["author"]["ID"]
 
@@ -101,7 +108,7 @@ class KaraberusClient:
         }
 
         if name not in self.medias:
-            with self.session.post(endpoint, json=body) as resp:
+            with requests.post(endpoint, json=body, headers=self.headers) as resp:
                 data = resp.json()
                 try:
                     self.medias[name] = data["media"]["ID"]
@@ -115,7 +122,7 @@ class KaraberusClient:
         endpoint = self.endpoint("/api/tags/media")
 
         if name not in self.medias:
-            with self.session.get(endpoint, params={"name": name}) as resp:
+            with requests.get(endpoint, params={"name": name}, headers=self.headers) as resp:
                 data = resp.json()
                 self.medias[name] = data["media"]["ID"]
 
@@ -150,7 +157,7 @@ class KaraberusClient:
         endpoint = self.endpoint("/api/kara")
         body = self.to_karaberus_karainfo(kara, authors)
 
-        with self.session.post(endpoint, json=body) as resp:
+        with requests.post(endpoint, json=body, headers=self.headers) as resp:
             resp.raise_for_status()
             data = resp.json()
             return data["kara"]["ID"]
@@ -159,16 +166,17 @@ class KaraberusClient:
         endpoint = self.endpoint(f"/api/kara/{kara_id}/creation_time")
         body = {"creation_time": creation_time}
 
-        with self.session.patch(endpoint, json=body) as resp:
+        with requests.patch(endpoint, json=body, headers=self.headers) as resp:
             resp.raise_for_status()
 
+    @default_backoff
     def upload(self, kara_id, file: Path, file_type: Literal["video", "sub", "inst"]):
         endpoint = self.endpoint(f"/api/kara/{kara_id}/upload/{file_type}")
         logger.info(f"uploading {file}")
 
         with file.open("rb") as f:
             files = {"file": f}
-            with self.session.put(endpoint, files=files) as resp:
+            with requests.put(endpoint, files=files, headers=self.headers) as resp:
                 resp.raise_for_status()
 
 
