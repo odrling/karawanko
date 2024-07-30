@@ -28,6 +28,7 @@ wankoschema = "karawanko.wankoexport:json_schema"
 wankomuxinst = "karawanko.wankomuxinst:main"
 wankomuxinstsingle = "karawanko.wankomuxinst:main_single"
 wankomigrate = "karawanko.wankomigrate:main"
+wankoimports = "karawanko.wankoimports:main"
 
 [tool.hatch.version]
 path = "karawanko/__init__.py"

@@ -203,6 +203,14 @@ class KaraberusClient:
             resp.raise_for_status()
             return resp.json()["kara"]
 
+    def mugen_import(self, mugen_kid: str):
+        endpoint = self.endpoint("/api/mugen")
+        data = {"mugen_kid": mugen_kid}
+
+        with requests.post(endpoint, headers=self.headers, json=data) as resp:
+            resp.raise_for_status()
+            return resp.json()["import"]
+
 
 class KaraFiles(NamedTuple):
     video: Path
