@@ -95,7 +95,7 @@ class KaraberusClient:
         return self.authors[name]
 
     def find_author(self, name: str):
-        endpoint = self.endpoint("/api/tags/author")
+        endpoint = self.endpoint("/api/tags/author/search")
 
         if name not in self.authors:
             with requests.get(endpoint, params={"name": name}, headers=self.headers) as resp:
@@ -126,7 +126,7 @@ class KaraberusClient:
         return self.medias[name]
 
     def find_media(self, name: str, media_type: str):
-        endpoint = self.endpoint("/api/tags/media")
+        endpoint = self.endpoint("/api/tags/media/search")
 
         if name not in self.medias:
             with requests.get(endpoint, params={"name": name}, headers=self.headers) as resp:
