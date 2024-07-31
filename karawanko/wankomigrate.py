@@ -37,6 +37,11 @@ class KaraInfo(TypedDict):
     language: str
 
 
+class KaraInfoPut(KaraInfo):
+    is_hardsub: bool
+    karaoke_creation_time: int
+
+
 class KaraInfoDB(TypedDict):
     VideoUploaded: bool
     InstrumentalUploaded: bool
@@ -179,9 +184,10 @@ class KaraberusClient:
             data = resp.json()
             return data["kara"]["ID"]
 
-    def set_creation_time(self, kara_id: int, creation_time: int):
-        endpoint = self.endpoint(f"/api/kara/{kara_id}/creation_time")
-        body = {"creation_time": creation_time}
+    def update_kara_data(self, kara_id: int, kara: KaraData, authors: list[str], creation_time: int, is_hardsub: bool):
+        endpoint = self.endpoint(f"/api/kara/{kara_id}")
+        karainfo = self.to_karaberus_karainfo(kara, authors)
+        body: KaraInfoPut = {"karaoke_creation_time": creation_time, "is_hardsub": is_hardsub, **karainfo}
 
         with requests.patch(endpoint, json=body, headers=self.headers) as resp:
             resp.raise_for_status()
@@ -263,15 +269,17 @@ def migrate_db(export_data: WankoExport, client: KaraberusClient):
         logger.info(f"processing {kara}")
         kara_files = find_files(kara)
         authors: list[str] = []
-        creation_time = None
+        creation_time = 0
+        is_hardsub = False
         if kara_files.sub is not None:
             authors = find_authors(kara_files.sub)
             creation_time = int(kara_files.sub.stat().st_mtime)
+        else:
+            is_hardsub = True
 
         kara_id = client.create_kara(kara_data, authors)
 
-        if creation_time is not None:
-            client.set_creation_time(kara_id, creation_time)
+        client.update_kara_data(kara_id, kara_data, authors, creation_time, is_hardsub)
 
         kara_ids[kara] = kara_id
 
@@ -309,8 +317,6 @@ def migrate(export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=Fals
             json.dump(kara_ids, f)
 
     migrate_files(client, kara_ids)
-
-
 
 
 def main():
