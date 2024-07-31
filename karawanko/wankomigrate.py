@@ -194,7 +194,8 @@ class KaraberusClient:
         with file.open("rb") as f:
             files = {"file": f}
             with requests.put(endpoint, files=files, headers=self.headers) as resp:
-                resp.raise_for_status()
+                if resp.status_code != 200:
+                    raise RuntimeError(f"{resp.json()}")
 
     def get_kara(self, kara_id) -> KaraInfoDB:
         endpoint = self.endpoint(f"/api/kara/{kara_id}")
