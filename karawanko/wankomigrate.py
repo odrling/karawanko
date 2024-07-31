@@ -208,10 +208,12 @@ class KaraberusClient:
         data = {"mugen_kid": mugen_kid}
 
         with requests.post(endpoint, headers=self.headers, json=data) as resp:
-            resp.raise_for_status()
             if resp.status_code == 204:
                 return
-            return resp.json()["import"]
+            if resp.status_code == 200:
+                return resp.json()["import"]
+            else:
+                raise RuntimeError(f"{resp.json()}")
 
 
 class KaraFiles(NamedTuple):

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import json
 from pathlib import Path
 from typing import Annotated, TypedDict
@@ -23,3 +24,7 @@ def imports(imports_file: Annotated[Path, typer.Argument(file_okay=True, dir_oka
 
 def main():
     typer.run(imports)
+
+
+if __name__ == "__main__":
+    main()
