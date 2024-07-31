@@ -70,7 +70,7 @@ class KaraberusClient:
         return self.artists[name]
 
     def find_artist(self, name: str):
-        endpoint = self.endpoint("/api/tags/artist")
+        endpoint = self.endpoint("/api/tags/artist/search")
 
         if name not in self.artists:
             with requests.get(endpoint, params={"name": name}, headers=self.headers) as resp:
