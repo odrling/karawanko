@@ -209,6 +209,8 @@ class KaraberusClient:
 
         with requests.post(endpoint, headers=self.headers, json=data) as resp:
             resp.raise_for_status()
+            if resp.status_code == 204:
+                return
             return resp.json()["import"]
 
 
