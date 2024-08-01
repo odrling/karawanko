@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import re
@@ -16,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 default_backoff = backoff.on_exception(
-        backoff.expo,
-        (ConnectionError,),
-        max_time=30,
+    backoff.expo,
+    (ConnectionError,),
+    max_time=30,
 )
 
 
@@ -149,8 +150,7 @@ class KaraberusClient:
         audio_tags = kara.audio_tags
 
         # filter OP/ED/INS video tags
-        video_tags = [tag for tag in kara.video_tags
-                      if tag not in ("OP", "ED", "INS")]
+        video_tags = [tag for tag in kara.video_tags if tag not in ("OP", "ED", "INS")]
 
         if "REMIX" in video_tags:
             video_tags.remove("REMIX")
@@ -191,6 +191,13 @@ class KaraberusClient:
 
         with requests.patch(endpoint, json=body, headers=self.headers) as resp:
             resp.raise_for_status()
+            resp_data = resp.json()
+            if resp_data["kara"]["Hardsubbed"] != is_hardsub:
+                raise RuntimeError(f"{resp_data["kara"]["Hardsubbed"]=} != {is_hardsub=}")
+
+            resp_creation_time = datetime.datetime.fromisoformat(resp_data["kara"]["KaraokeCreationTime"]).timestamp()
+            if resp_creation_time != creation_time:
+                raise RuntimeError(f"{resp_creation_time=} != {creation_time=}")
 
     @default_backoff
     def upload(self, kara_id, file: Path, file_type: Literal["video", "sub", "inst"]):
@@ -271,11 +278,11 @@ def migrate_db(export_data: WankoExport, client: KaraberusClient):
         authors: list[str] = []
         creation_time = 0
         is_hardsub = False
-        if kara_files.sub is not None:
+        if kara_files.sub is None:
+            is_hardsub = True
+        else:
             authors = find_authors(kara_files.sub)
             creation_time = int(kara_files.sub.stat().st_mtime)
-        else:
-            is_hardsub = True
 
         kara_id = client.create_kara(kara_data, authors)
 
