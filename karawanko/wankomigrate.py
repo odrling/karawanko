@@ -44,6 +44,7 @@ class KaraInfoPut(KaraInfo):
 
 
 class KaraInfoDB(TypedDict):
+    ID: int
     VideoUploaded: bool
     InstrumentalUploaded: bool
     SubtitlesUploaded: bool
@@ -217,6 +218,13 @@ class KaraberusClient:
             resp.raise_for_status()
             return resp.json()["kara"]
 
+    def get_karas(self) -> list[KaraInfoDB]:
+        endpoint = self.endpoint("/api/kara")
+
+        with requests.get(endpoint, headers=self.headers) as resp:
+            resp.raise_for_status()
+            return resp.json()["Karas"]
+
     def mugen_import(self, mugen_kid: str):
         endpoint = self.endpoint("/api/mugen")
         data = {"mugen_kid": mugen_kid}
@@ -294,8 +302,9 @@ def migrate_db(export_data: WankoExport, client: KaraberusClient):
 
 
 def migrate_files(client: KaraberusClient, kara_ids: dict[str, int]):
+    karas = {kara["ID"]: kara for kara in client.get_karas()}
     for kara, kara_id in kara_ids.items():
-        kara_info = client.get_kara(kara_id)
+        kara_info = karas[kara_id]
         kara_id = kara_ids[kara]
         kara_files = find_files(kara)
         if not kara_info["VideoUploaded"]:
