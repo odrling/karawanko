@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 default_backoff = backoff.on_exception(
     backoff.expo,
-    (ConnectionError,),
+    (ConnectionError, json.JSONDecodeError),
     max_time=30,
 )
 
