@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from karawanko.wankoparse import KaraData, parse_file
+from karawanko.wankoparse import Details, KaraData, parse_file
 
 file_tests: list[tuple[str, KaraData | None]] = [
     (
@@ -10,7 +10,7 @@ file_tests: list[tuple[str, KaraData | None]] = [
             "title": "Twilight",
             "tags": ["AMV"],
             "media": None,
-            "details": [("AMV", "Daicon Opening Animations")],
+            "details": [Details("AMV", "Daicon Opening Animations")],
             "artists": ["Electric Light Orchestra"],
             "language": "",
             "pandora_box": False,
@@ -23,9 +23,9 @@ file_tests: list[tuple[str, KaraData | None]] = [
             "tags": ["ED", "SPOIL"],
             "media": {"name": "Xenoblade Chronicles", "media_type": "game"},
             "artists": [],
-            "details": [("VERS", "Japanese"), ("VIDEO", "Ending")],
+            "details": [Details("VERS", "Japanese"), Details("VIDEO", "Ending")],
             "language": "",
-            "pandora_box": False,
+            "pandora_box": True,
         },
     ),
     (
@@ -59,7 +59,7 @@ file_tests: list[tuple[str, KaraData | None]] = [
             "tags": ["PV"],
             "media": None,
             "artists": ["Arai Yumi"],
-            "details": [("AMV", "Kaze Tachinu"), ("AMV", "Le Vent se lève")],
+            "details": [Details("AMV", "Kaze Tachinu"), Details("AMV", "Le Vent se lève")],
             "language": "",
             "pandora_box": False,
         },
@@ -85,7 +85,7 @@ file_tests: list[tuple[str, KaraData | None]] = [
             "tags": ["PV"],
             "details": [],
             "language": "",
-            "pandora_box": False,
+            "pandora_box": True,
         },
     ),
     (
@@ -97,7 +97,7 @@ file_tests: list[tuple[str, KaraData | None]] = [
             "tags": ["OP"],
             "details": [],
             "language": "",
-            "pandora_box": False,
+            "pandora_box": True,
         },
     ),
     (
@@ -107,9 +107,9 @@ file_tests: list[tuple[str, KaraData | None]] = [
             "tags": ["LIVE"],
             "artists": ["Aqours"],
             "media": None,
-            "details": [("VIDEO", "Love Live! Sunshine!! Aqours 5th LoveLive! ～Next SPARKLING!!～ Day 1")],
+            "details": [Details("VIDEO", "Love Live! Sunshine!! Aqours 5th LoveLive! ～Next SPARKLING!!～ Day 1")],
             "language": "",
-            "pandora_box": False,
+            "pandora_box": True,
         },
     ),
     (
@@ -121,7 +121,7 @@ file_tests: list[tuple[str, KaraData | None]] = [
             "media": None,
             "details": [],
             "language": "",
-            "pandora_box": False,
+            "pandora_box": True,
         },
     ),
     ("Cardcaptor Sakura ~ Clear Card-hen Prologue - Sakura to Futatsu no Kuma - ED - Yakusoku no Sora.mkv", None),
@@ -144,7 +144,7 @@ file_tests: list[tuple[str, KaraData | None]] = [
             "tags": ["AMV"],
             "artists": ["Yousei Teikoku"],
             "media": None,
-            "details": [("INS", "Ga-Rei Zero"), ("AMV", "Project Zero")],
+            "details": [Details("INS", "Ga-Rei Zero"), Details("AMV", "Project Zero")],
             "language": "",
             "pandora_box": False,
         },
@@ -182,7 +182,7 @@ file_tests: list[tuple[str, KaraData | None]] = [
             "media": {"name": "Boku no Hero Academia 4th Season", "media_type": "anime"},
             "details": [],
             "language": "",
-            "pandora_box": False,
+            "pandora_box": True,
         }
     )
 ]
