@@ -335,8 +335,43 @@ def migrate(export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=Fals
     migrate_files(client, kara_ids)
 
 
+def fmove(src: Path, dst: Path) -> None:
+    logger.info(f"{src} → {dst}")
+    src.rename(dst)
+
+
+def migrate_local_files(id_dump: dict[str, int], karaberus_dir: Path):
+    karaberus_dir.mkdir(parents=True, exist_ok=True)
+    for kara, karaberus_id in id_dump.items():
+        kara_files = find_files(kara)
+        if kara_files.video.exists():
+            fmove(kara_files.video, karaberus_dir / f"{karaberus_id}.mkv")
+        else:
+            logger.warning(f"{kara_files.video} not found")
+
+        if kara_files.audio is not None:
+            fmove(kara_files.audio, karaberus_dir / f"{karaberus_id}.mka")
+        if kara_files.sub is not None:
+            fmove(kara_files.sub, karaberus_dir / f"{karaberus_id}.ass")
+
+
+def filemigrate(
+    export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=False)],
+    karaberus_dir: Annotated[Path, typer.Argument(file_okay=False)],
+):
+    kara_id_dump_file = export.with_suffix(".iddump.json")
+
+    with kara_id_dump_file.open() as f:
+        id_dump: dict[str, int] = json.load(f)
+        migrate_local_files(id_dump, karaberus_dir)
+
+
 def main():
     typer.run(migrate)
+
+
+def filemigratemain():
+    typer.run(filemigrate)
 
 
 if __name__ == "__main__":
