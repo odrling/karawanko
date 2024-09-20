@@ -356,12 +356,10 @@ def migrate_local_files(id_dump: dict[str, int], karaberus_dir: Path):
 
 
 def filemigrate(
-    export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=False)],
+    id_dump_file: Annotated[Path, typer.Argument(file_okay=True, dir_okay=False)],
     karaberus_dir: Annotated[Path, typer.Argument(file_okay=False)],
 ):
-    kara_id_dump_file = export.with_suffix(".iddump.json")
-
-    with kara_id_dump_file.open() as f:
+    with id_dump_file.open() as f:
         id_dump: dict[str, int] = json.load(f)
         migrate_local_files(id_dump, karaberus_dir)
 
