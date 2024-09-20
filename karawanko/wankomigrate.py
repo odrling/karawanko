@@ -335,9 +335,9 @@ def migrate(export: Annotated[Path, typer.Argument(file_okay=True, dir_okay=Fals
     migrate_files(client, kara_ids)
 
 
-def fmove(src: Path, dst: Path) -> None:
+def link(src: Path, dst: Path) -> None:
     logger.info(f"{src} → {dst}")
-    src.rename(dst)
+    dst.hardlink_to(src)
 
 
 def migrate_local_files(id_dump: dict[str, int], karaberus_dir: Path):
@@ -345,14 +345,14 @@ def migrate_local_files(id_dump: dict[str, int], karaberus_dir: Path):
     for kara, karaberus_id in id_dump.items():
         kara_files = find_files(kara)
         if kara_files.video.exists():
-            fmove(kara_files.video, karaberus_dir / f"{karaberus_id}.mkv")
+            link(kara_files.video, karaberus_dir / f"{karaberus_id}.mkv")
         else:
             logger.warning(f"{kara_files.video} not found")
 
         if kara_files.audio is not None:
-            fmove(kara_files.audio, karaberus_dir / f"{karaberus_id}.mka")
+            link(kara_files.audio, karaberus_dir / f"{karaberus_id}.mka")
         if kara_files.sub is not None:
-            fmove(kara_files.sub, karaberus_dir / f"{karaberus_id}.ass")
+            link(kara_files.sub, karaberus_dir / f"{karaberus_id}.ass")
 
 
 def filemigrate(
